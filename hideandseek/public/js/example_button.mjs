@@ -1,9 +1,9 @@
 
 // if you use Windows OS, comment out this:
 // const noble = require('@abandonware/noble')({extended: false});
-const noble = require('@abandonware/noble');
+import noble from 'https://esm.sh/@abandonware/noble';
 
-const Button = require('../../dist/packages/block/Button');
+import Button from '../../dist/packages/block/Button';
 const block = new Button.Button();
 
 const Base = require('../../dist/packages/block/Base');
@@ -93,6 +93,8 @@ async function main() {
         // Event handler
         block.onSinglePressed = () => {
             console.log('Single Pressed')
+            let text = document.getElementById('test').textContent; //宣言
+            document.getElementById('test').textContent = 'textContentでHTMLを書き換えています';
         }
         block.onLongPressed = () => {
             console.log('Long Pressed')

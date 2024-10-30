@@ -1,0 +1,1 @@
+{"root":["../packages/block/base.ts","../packages/block/brightness.ts","../packages/block/button.ts","../packages/block/gpio.ts","../packages/block/led.ts","../packages/block/motion.ts","../packages/block/move.ts","../packages/block/temphumid.ts","../packages/util/error.ts","../package.json"],"version":"5.6.3"}
