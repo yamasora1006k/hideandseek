@@ -1,0 +1,9 @@
+{
+  "imports": {
+    "std/": "https://deno.land/std@0.221.0/"
+  },
+  "tasks": {
+    "test": "deno run --allow-net --allow-read ./server.js",
+    "dev": "deno run --watch server.js"
+  }
+}
