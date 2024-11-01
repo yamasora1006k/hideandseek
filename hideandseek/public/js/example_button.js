@@ -1,12 +1,12 @@
 
 // if you use Windows OS, comment out this:
 // const noble = require('@abandonware/noble')({extended: false});
-import noble from 'https://esm.sh/@abandonware/noble';
+const noble = require('@abandonware/noble');
 
-import Button from '../../dist/packages/block/Button';
+const Button = require('/Users/itougakuto/hideandseek/hideandseek/dist/packages/block/Button.js');
 const block = new Button.Button();
 
-const Base = require('../../dist/packages/block/Base');
+const Base = require('/Users/itougakuto/hideandseek/hideandseek/dist/packages/block/Base.js');
 const meshBlock = new Base.Base();
 const SERVICE_UUIDS = [meshBlock.UUIDS.SERVICE_ID];
 const CHARACTERISTIC_UUIDS = [
