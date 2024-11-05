@@ -42,7 +42,7 @@ async def scan(prefix='MESH-100'):
             return matched_devices[0]
         await asyncio.sleep(2)  # 次のスキャンまで2秒待機
 
-async def handle_button(client, event_queue):
+async def handle_button(client, event_queue, num):
     """ボタンデバイスのイベントを処理し、特定のイベントをキューに送信する。"""
     def button_notify(sender, data: bytearray):
         """ボタンの通知を受信した際のコールバック関数。"""
@@ -54,10 +54,20 @@ async def handle_button(client, event_queue):
         if state == 1:
             print('Single Pressed. LEDコマンドをキューに追加します。')
             asyncio.create_task(event_queue.put('single_press'))
+            orders_ref = db.collection('orders')
+            docs = orders_ref.get()
+            for doc in docs:
+                print(doc.id, doc.to_dict())
         elif state == 2:
             print('Long Pressed.')
         elif state == 3:
             print('Double Pressed.')
+            data = {
+                'kind': 'button',
+                'time': num,
+            }
+            db.collection('orders').add(data)
+            print('書き込みました。')
 
     # 通知の開始
     await client.start_notify(CORE_NOTIFY_UUID, button_notify)
@@ -126,6 +136,9 @@ async def main():
     # 共有キューの作成
     event_queue = asyncio.Queue()
 
+    #buttonのプッシュ回数を保持
+    num = 0
+
     # 両方のデバイスに接続
     async with BleakClient(device_button, timeout=None) as client_button, BleakClient(device_led, timeout=None) as client_led:
         # 両方の接続が確立していることを確認
@@ -137,7 +150,7 @@ async def main():
         print('両方のデバイスに接続しました。')
 
         # ボタンハンドラーとLEDハンドラーをタスクとして開始
-        button_task = asyncio.create_task(handle_button(client_button, event_queue))
+        button_task = asyncio.create_task(handle_button(client_button, event_queue, num))
         led_task = asyncio.create_task(handle_led(client_led, event_queue))
 
         # 両方のタスクを並行して実行
