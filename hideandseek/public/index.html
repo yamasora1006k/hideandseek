@@ -1,31 +1,27 @@
-<!-- @format -->
-
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title></title>
     <link rel="stylesheet" href="style.css" />
     <link rel="manifest" href="manifest.json">
   </head>
   <body>
-    <p class="HomeImage">
-      <img src="./image/home.png" alt="home" />
-    </p>
+    <img src="./image/home.png" alt="home" class="fullscreen-image" />
     <script type="module" src="firebase.js"></script>
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js').then(registration => {
-        console.log('ServiceWorker registration successful with scope: ', registration.scope);
-        }, err => {
-        console.log('ServiceWorker registration failed: ', err);
-        }).catch(err => {
-        console.log(err)
-        });
+          navigator.serviceWorker.register('sw.js').then(registration => {
+            console.log('ServiceWorker registration successful with scope: ', registration.scope);
+          }, err => {
+            console.log('ServiceWorker registration failed: ', err);
+          }).catch(err => {
+            console.log(err);
+          });
         });
       }
-      </script>
+    </script>
   </body>
 </html>
