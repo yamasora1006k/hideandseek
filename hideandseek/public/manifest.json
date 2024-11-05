@@ -1,5 +1,5 @@
 {
-	"short_name": "pwa",
+	"short_name": "宝探しダンジョン",
 	"name": "pwa_sample_app",
 	"display": "standalone",
 	"start_url": "index.html",
