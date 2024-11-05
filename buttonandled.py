@@ -52,22 +52,12 @@ async def handle_button(client, event_queue, num):
             return
         state = data[STATE_INDEX]
         if state == 1:
-            print('Single Pressed. LEDコマンドをキューに追加します。')
-            asyncio.create_task(event_queue.put('single_press'))
-            orders_ref = db.collection('orders')
-            docs = orders_ref.get()
-            for doc in docs:
-                print(doc.id, doc.to_dict())
+            print('Single Pressed. ')
+            db.collection('orders').document('BUTTON').update({'true': 1})
         elif state == 2:
             print('Long Pressed.')
         elif state == 3:
             print('Double Pressed.')
-            data = {
-                'kind': 'button',
-                'time': num,
-            }
-            db.collection('orders').add(data)
-            print('書き込みました。')
 
     # 通知の開始
     await client.start_notify(CORE_NOTIFY_UUID, button_notify)
@@ -123,8 +113,27 @@ async def handle_led(client, event_queue):
                 print('LEDの設定中にエラーが発生しました:', e)
         event_queue.task_done()
 
+async def handle_vibration(client):
+    """振動デバイスの通知を処理する"""
+    def vibration_notify(sender, data: bytearray):
+        """振動デバイスの通知を受信した際のコールバック関数。"""
+        print('振動イベントが発生しました。')
+        db.collection('orders').document('VIBRATION').update({'true': 1})
+
+    # 通知の開始
+    await client.start_notify(CORE_NOTIFY_UUID, vibration_notify)
+    print('振動デバイスに接続しました。')
+
+    # ハンドラーを常に動作させるためのループ
+    while True:
+        await asyncio.sleep(1)
+
 async def main():
-    """メインの非同期関数。デバイスのスキャン、接続、およびハンドリングを行う。"""
+    # Firebaseの初期化
+    db.collection('orders').document('BUTTON').set({'kind': 'button', 'true': 0})
+    db.collection('orders').document('VIBRATION').set({'kind': 'vibration', 'true': 0})
+    db.collection('orders').document('LED').set({'kind': 'LED', 'true': 0})
+
     # ボタンデバイスをスキャン
     device_button = await scan('MESH-100BU')
     print('ボタンデバイスを見つけました:', device_button.name, device_button.address)
@@ -133,28 +142,38 @@ async def main():
     device_led = await scan('MESH-100LE')
     print('LEDデバイスを見つけました:', device_led.name, device_led.address)
 
+    # 振動デバイスをスキャン
+    device_vibration = await scan('MESH-100VI')
+    print('振動デバイスを見つけました:', device_vibration.name, device_vibration.address)
+
     # 共有キューの作成
     event_queue = asyncio.Queue()
 
-    #buttonのプッシュ回数を保持
+    # ボタンのプッシュ回数を保持
     num = 0
 
     # 両方のデバイスに接続
-    async with BleakClient(device_button, timeout=None) as client_button, BleakClient(device_led, timeout=None) as client_led:
-        # 両方の接続が確立していることを確認
+    async with BleakClient(device_button, timeout=None) as client_button, \
+               BleakClient(device_led, timeout=None) as client_led, \
+               BleakClient(device_vibration, timeout=None) as client_vibration:
+
+        # 各デバイスの接続が確立していることを確認
         if not client_button.is_connected:
             await client_button.connect()
         if not client_led.is_connected:
             await client_led.connect()
+        if not client_vibration.is_connected:
+            await client_vibration.connect()
 
-        print('両方のデバイスに接続しました。')
+        print('全てのデバイスに接続しました。')
 
-        # ボタンハンドラーとLEDハンドラーをタスクとして開始
+        # 各デバイスのハンドラーをタスクとして開始
         button_task = asyncio.create_task(handle_button(client_button, event_queue, num))
         led_task = asyncio.create_task(handle_led(client_led, event_queue))
+        vibration_task = asyncio.create_task(handle_vibration(client_vibration))
 
-        # 両方のタスクを並行して実行
-        await asyncio.gather(button_task, led_task)
+        # 並行して全てのタスクを実行
+        await asyncio.gather(button_task, led_task, vibration_task)
 
 if __name__ == '__main__':
     try:
