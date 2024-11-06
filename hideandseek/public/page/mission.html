@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>宝探しダンジョン</title>
+    <link rel="stylesheet" href="../style.css" />
+    <link rel="manifest" href="../manifest.json">
+</head>
+<body>
+    <!-- 背景画像 -->
+    <div class="background">
+        <img src="../image/mission.png" alt="mission" class="fullscreen-image" />
+
+        <!-- タップ可能な領域 -->
+        <div class="tap-area" id="tap-area-1" onclick="showPopup('ボタンを1回押せ', 'mission-bar-1')"></div>
+        <div class="tap-area" id="tap-area-2" onclick="showPopup('色を当てろ', 'mission-bar-2')"></div>
+        <div class="tap-area" id="tap-area-3" onclick="showPopup('振れ！', 'mission-bar-3')"></div>
+    </div>
+
+    <!-- 名前入力ポップアップ -->
+    <div id="name-popup" class="popup">
+        <label for="name-input">名前を入力してください:</label>
+        <input type="text" id="name-input" />
+        <button class="save-btn" onclick="saveName()">保存</button>
+        <button class="cancel-btn" onclick="cancelPopup()">キャンセル</button>
+    </div>
+
+    <script type="module">
+        // Firebaseの関数をインポート
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+        import { getFirestore, collection, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-analytics.js";
+    
+        // Firebaseの設定
+        const firebaseConfig = {
+            apiKey: "AIzaSyADCaqfQ7keN4jAlhEu3PPB3OSFA7hDXts",
+            authDomain: "yamaso-8515a.firebaseapp.com",
+            projectId: "yamaso-8515a",
+            storageBucket: "yamaso-8515a.appspot.com",
+            messagingSenderId: "550480982941",
+            appId: "1:550480982941:web:d210a4658b8b6429c33574",
+            measurementId: "G-EQXBWBES62"
+        };
+    
+        // Firebaseの初期化
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const analytics = getAnalytics(app);
+    
+        // Firestoreの関数をグローバルに公開
+        window.db = db;
+        window.doc = doc;
+        window.collection = collection;
+        window.setDoc = setDoc;
+        window.getDoc = getDoc;
+    </script>
+    
+    
+    
+
+    <script>
+        // グローバル変数として`currentMission`と`currentMissionBarId`を定義
+        var currentMission = ""; // 初期化
+        var currentMissionBarId = ""; // 初期化
+
+        // ポップアップを表示する関数
+        function showPopup(missionName, missionBarId) {
+            currentMission = missionName;
+            currentMissionBarId = missionBarId;
+            document.getElementById('name-popup').style.display = 'block';
+        }
+
+        // ポップアップを非表示にする関数
+        function cancelPopup() {
+            document.getElementById('name-popup').style.display = 'none';
+            document.getElementById('name-input').value = ''; // 入力フィールドをクリア
+        }
+
+        // 名前をFirebaseに保存する関数
+        // Firestoreに名前を保存する関数
+        async function saveName() {
+    const nameInput = document.getElementById('name-input');
+    const name = nameInput.value;
+
+    if (name) {
+        try {
+            // Use doc and collection from the global scope or ensure they are available
+            const missionRef = doc(collection(db, "missions"), currentMission);
+            await setDoc(missionRef, { name: name });
+
+            // Hide the popup and clear the input field
+            document.getElementById('name-popup').style.display = 'none';
+            nameInput.value = '';
+
+            // Display the name in the mission bar
+            const missionBar = document.getElementById(currentMissionBarId);
+            if (missionBar) {
+                missionBar.innerText = name;
+            }
+
+        } catch (error) {
+            console.error('Error saving name: ', error);
+        }
+        console.log('Firestore initialized: ', db);
+
+    }
+}
+
+
+// Firebaseから名前を取得して表示する関数
+async function loadName(missionName, missionBarId) {
+    try {
+        const missionRef = doc(collection(db, "missions"), missionName);
+        const docSnap = await getDoc(missionRef);
+
+        if (docSnap.exists()) {
+            const name = docSnap.data().name;
+            const missionBar = document.getElementById(missionBarId);
+            if (missionBar) {
+                missionBar.innerText = name;
+            }
+        }
+    } catch (error) {
+        console.error('Error loading name: ', error);
+    }
+}
+
+
+        // ページ読み込み時に各ミッションの名前をロード
+        window.onload = function() {
+            loadName('ボタンを1回押せ', 'mission-bar-1');
+            loadName('色を当てろ', 'mission-bar-2');
+            loadName('振れ！', 'mission-bar-3');
+        };
+
+        // グローバルスコープに公開
+        window.showPopup = showPopup;
+        window.saveName = saveName;
+        window.cancelPopup = cancelPopup;
+    </script>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('../sw.js').then(registration => {
+                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                }).catch(err => {
+                    console.log('ServiceWorker registration failed: ', err);
+                });
+            });
+        }
+    </script>
+</body>
+</html>

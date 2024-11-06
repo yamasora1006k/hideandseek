@@ -1,21 +1,21 @@
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-analytics.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
 
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-  const firebaseConfig = {
-    apiKey: "AIzaSyCqmozU0o6QFsIHET33KVVazf2ah67BjaY",
-    authDomain: "hideandseek-main.firebaseapp.com",
-    projectId: "hideandseek-main",
-    storageBucket: "hideandseek-main.appspot.com",
-    messagingSenderId: "735377376955",
-    appId: "1:735377376955:web:c5078194804827d3facb9e",
-    measurementId: "G-2EFSXLX3BP"
-  };
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyCQHe6oqqp9dWPLTnbuSevPtH-OM61nmmg",
+  authDomain: "hideend-8d9cc.firebaseapp.com",
+  projectId: "hideend-8d9cc",
+  storageBucket: "hideend-8d9cc.firebasestorage.app",
+  messagingSenderId: "73697262710",
+  appId: "1:73697262710:web:ba8aa964343f65e11cf357",
+  measurementId: "G-4YW1T5E2B6"
+};
 
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
