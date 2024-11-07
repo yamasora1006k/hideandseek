@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>宝探しダンジョン</title>
+    <link rel="stylesheet" href="../style.css" />
+    <link rel="manifest" href="../manifest.json">
+</head>
+<body>
+    <div class="background">
+        <img src="../image/mission.png" alt="mission" class="fullscreen-image" />
+        <div class="tap-area" id="tap-area-1" onclick="showPopup('ボタンを1回押せ', 'mission-bar-1')">
+            <div class="GroupName" id="mission-bar-1"></div>
+        </div>
+        <div class="tap-area" id="tap-area-2" onclick="showPopup('色を当てろ', 'mission-bar-2')">
+            <div class="GroupName" id="mission-bar-2"></div>
+        </div>
+        <div class="tap-area" id="tap-area-3" onclick="showPopup('振れ！', 'mission-bar-3')">
+            <div class="GroupName" id="mission-bar-3"></div>
+        </div>
+    </div>
+
+    <div id="name-popup" class="popup">
+        <label for="name-input">グループ名を入力してください:</label>
+        <input type="text" id="name-input" />
+        <button class="save-btn" onclick="saveName()">保存</button>
+        <button class="cancel-btn" onclick="cancelPopup()">キャンセル</button>
+    </div>
+
+    <script>
+        var currentMission = ""; // 初期化
+        var currentMissionBarId = ""; // 初期化
+
+        function showPopup(missionName, missionBarId) {
+            currentMission = missionName;
+            currentMissionBarId = missionBarId;
+            document.getElementById('name-popup').style.display = 'block';
+        }
+
+        function cancelPopup() {
+            document.getElementById('name-popup').style.display = 'none';
+            document.getElementById('name-input').value = ''; // 入力フィールドをクリア
+        }
+
+        async function saveName() {
+            const nameInput = document.getElementById('name-input');
+            const name = nameInput.value;
+
+            if (name) {
+                try {
+                    const userGroup = localStorage.getItem('userGroup');
+                    let collectionName = userGroup === 'group1' ? 'Group1' : 'Group2';
+                    const missionRef = doc(collection(db, collectionName), currentMission);
+
+                    await setDoc(missionRef, { name: name });
+                    console.log(`Saved ${name} to ${collectionName}/${currentMission}`);
+
+                    // Save to localStorage for transferring to another HTML page
+                    saveToLocalStorage(currentMission, name);
+
+                    document.getElementById('name-popup').style.display = 'none';
+                    nameInput.value = '';
+
+                    loadName(currentMission, currentMissionBarId);
+
+                    // Check if all missions are completed and redirect
+                    checkAndRedirect();
+                } catch (error) {
+                    console.error('Error saving name: ', error);
+                }
+            }
+        }
+
+        async function loadName(missionName, missionBarId) {
+            try {
+                const userGroup = localStorage.getItem('userGroup');
+                let collectionName = userGroup === 'group1' ? 'Group1' : 'Group2';
+                const missionRef = doc(collection(db, collectionName), missionName);
+                const docSnap = await getDoc(missionRef);
+
+                if (docSnap.exists()) {
+                    const name = docSnap.data().name;
+                    const missionBar = document.getElementById(missionBarId);
+                    if (missionBar) {
+                        missionBar.innerText = name;
+                    }
+                    console.log(`Loaded ${name} from ${collectionName}/${missionName}`);
+
+                    // Save to localStorage for transfer to another HTML
+                    saveToLocalStorage(missionName, name);
+                } else {
+                    console.log(`No data found for ${collectionName}/${missionName}`);
+                }
+            } catch (error) {
+                console.error('Error loading name: ', error);
+            }
+        }
+
+        function saveToLocalStorage(missionName, name) {
+            localStorage.setItem(missionName, name);
+        }
+
+        function checkAndRedirect() {
+            const missions = ['ボタンを1回押せ', '色を当てろ', '振れ！'];
+            const allCompleted = missions.every(mission => localStorage.getItem(mission));
+            if (allCompleted) {
+                // Delay the redirect by 2 seconds (2000 milliseconds)
+                setTimeout(() => {
+                    window.location.href = 'clear.html';
+                }, 2000);
+            }
+        }
+
+        window.onload = function() {
+            loadName('ボタンを1回押せ', 'mission-bar-1');
+            loadName('色を当てろ', 'mission-bar-2');
+            loadName('振れ！', 'mission-bar-3');
+
+            // Check if all missions are completed on page load
+            checkAndRedirect();
+        };
+
+        window.showPopup = showPopup;
+        window.saveName = saveName;
+        window.cancelPopup = cancelPopup;
+    </script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+        import { getFirestore, collection, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-analytics.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyADCaqfQ7keN4jAlhEu3PPB3OSFA7hDXts",
+            authDomain: "yamaso-8515a.firebaseapp.com",
+            projectId: "yamaso-8515a",
+            storageBucket: "yamaso-8515a.appspot.com",
+            messagingSenderId: "550480982941",
+            appId: "1:550480982941:web:d210a4658b8b6429c33574",
+            measurementId: "G-EQXBWBES62"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const analytics = getAnalytics(app);
+
+        window.db = db;
+        window.doc = doc;
+        window.collection = collection;
+        window.setDoc = setDoc;
+        window.getDoc = getDoc;
+    </script>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('../sw.js').then(registration => {
+                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                }).catch(err => {
+                    console.log('ServiceWorker registration failed: ', err);
+                });
+            });
+        }
+    </script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').then(registration => {
+                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                }, err => {
+                    console.log('ServiceWorker registration failed: ', err);
+                }).catch(err => {
+                    console.log(err);
+                });
+            });
+        }
+    </script>
+</body>
+</html>

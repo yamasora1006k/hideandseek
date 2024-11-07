@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>宝探しダンジョン</title>
+    <link rel="manifest" href="../manifest.json">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Pirata+One&display=swap');
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Pirata One', cursive;
+            background-color: #2d1b0c;
+            background-image: url('pirate_texture.jpg');
+            background-size: cover;
+            background-repeat: no-repeat;
+            color: #f5d68d;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            color: #ffd700;
+            text-shadow: 3px 3px 5px rgba(0, 0, 0, 0.7);
+        }
+
+        button {
+            font-size: 1.5em;
+            margin: 35px; 
+            padding: 15px 30px;
+            background: linear-gradient(145deg, #4b3e30, #2d1b0c);
+            color: #ffd700;
+            border: 3px solid #b88746;
+            border-radius: 12px;
+            box-shadow: 0 5px 8px rgba(0, 0, 0, 0.4), inset 0 2px 3px rgba(255, 215, 0, 0.3);
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.3s;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
+            animation: pulse 1.5s infinite ease-in-out;
+        }
+
+        button:hover {
+            transform: translateY(-4px);
+            background: linear-gradient(145deg, #2d1b0c, #4b3e30);
+        }
+
+        button:active {
+            transform: translateY(1px);
+            background: linear-gradient(145deg, #3a2c22, #1e0f06);
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+    </style>
+</head>
+<body>
+    <button onclick="selectGroup('group1')">グループ 1</button>
+    <button onclick="selectGroup('group2')">グループ 2</button>
+
+    <audio id="button-sound" src="./audio/DecideButtom.mp3"></audio>
+
+    <script>
+        function playButtonSound() {
+            const buttonSound = document.getElementById('button-sound');
+            buttonSound.currentTime = 0; // 再生位置をリセット
+            buttonSound.play().catch(error => {
+                console.error('音声の再生に失敗しました:', error);
+            });
+        }
+
+        function selectGroup(group) {
+            playButtonSound();
+            localStorage.setItem('userGroup', group);
+            if (group === 'group1') {
+                window.location.href = 'mission1.html';
+            } else if (group === 'group2') {
+                window.location.href = 'mission2.html';
+            }
+        }
+    </script>
+
+    <script type="module" src="firebase.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('../sw.js').then(registration => {
+                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                }, err => {
+                    console.log('ServiceWorker registration failed:', err);
+                }).catch(err => {
+                    console.log(err);
+                });
+            });
+        }
+    </script>
+</body>
+</html>

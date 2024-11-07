@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -10,7 +10,7 @@
   <body>
     <img src="./image/home.png" alt="home" class="fullscreen-image" />
 
-    <a href="./page/mission.html" class="tap-start-link"></a>
+    <a href="./page/login.html" class="tap-start-link"></a>
 
     <script type="module" src="firebase.js"></script>
     <script>
@@ -25,6 +25,136 @@
           });
         });
       }
+    </script>
+  </body>
+</html> -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>宝探しダンジョン</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="manifest" href="manifest.json">
+    <style>
+      /* 省略されたスタイル */
+      #music-popup {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+      }
+      #music-popup div {
+        background: #333;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+      }
+      #music-popup button {
+        margin: 10px;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+      #allow-button {
+        background: #4CAF50;
+        color: white;
+      }
+      #deny-button {
+        background: #F44336;
+        color: white;
+      }
+    </style>
+  </head>
+  <body>
+    <img src="./image/home.png" alt="home" class="fullscreen-image" />
+
+    <a href="./page/login.html" class="tap-start-link" id="start-link"></a>
+
+    <audio id="background-music" src="./audio/home.mp3" loop></audio>
+    <audio id="button-sound" src="./audio/DecideButtom.mp3"></audio>
+
+    <div id="music-popup">
+      <div>
+        <p>このアプリで音楽を再生しますか？</p>
+        <button id="allow-button">許可する</button>
+        <button id="deny-button">許可しない</button>
+      </div>
+    </div>
+
+    <script type="module" src="firebase.js"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('sw.js').then(registration => {
+            console.log('ServiceWorker registration successful with scope: ', registration.scope);
+          }, err => {
+            console.log('ServiceWorker registration failed: ', err);
+          }).catch(err => {
+            console.log(err);
+          });
+        });
+      }
+
+      // 音楽許可の処理
+      document.addEventListener('DOMContentLoaded', () => {
+        const popup = document.getElementById('music-popup');
+        const audio = document.getElementById('background-music');
+        const buttonSound = document.getElementById('button-sound');
+        const allowButton = document.getElementById('allow-button');
+        const denyButton = document.getElementById('deny-button');
+        const startLink = document.getElementById('start-link');
+
+        // ローカルストレージを確認して、許可されていれば音楽を再生
+        const musicPermission = localStorage.getItem('musicPermission');
+        if (musicPermission === 'allowed') {
+          playMusic(audio);
+        } else {
+          // 許可されていなければポップアップを表示
+          popup.style.display = 'flex';
+        }
+
+        // "許可する"ボタンがクリックされた場合
+        allowButton.addEventListener('click', () => {
+          localStorage.setItem('musicPermission', 'allowed'); // 許可を保存
+          playMusic(audio);
+          popup.style.display = 'none'; // ポップアップを閉じる
+        });
+
+        // "許可しない"ボタンがクリックされた場合
+        denyButton.addEventListener('click', () => {
+          localStorage.setItem('musicPermission', 'denied'); // 拒否を保存
+          popup.style.display = 'none'; // ポップアップを閉じる
+        });
+
+        // "Start"リンクがクリックされたときに音を鳴らす
+        startLink.addEventListener('click', (event) => {
+          event.preventDefault(); // ページ遷移を一時的に防止
+          buttonSound.play().catch(error => {
+            console.error('ボタン音の再生に失敗しました。', error);
+          });
+          // 短い遅延後にページ遷移
+          setTimeout(() => {
+            window.location.href = startLink.href;
+          }, 300); // 音が聞こえるように少し待つ
+        });
+
+        function playMusic(audioElement) {
+          audioElement.play().catch(error => {
+            console.error('音楽の再生に失敗しました。', error);
+          });
+        }
+      });
     </script>
   </body>
 </html>
