@@ -28,102 +28,144 @@
         <button class="cancel-btn" onclick="cancelPopup()">キャンセル</button>
     </div>
 
+    <!-- Add mission audio element -->
+    <audio id="mission-music" src="../audio/mission.mp3" loop></audio>
+
     <script>
-        var currentMission = ""; // 初期化
-        var currentMissionBarId = ""; // 初期化
+        document.addEventListener('DOMContentLoaded', () => {
+            // 音楽再生の許可があるか確認
+            const musicPermission = localStorage.getItem('musicPermission');
+            if (musicPermission === 'allowed') {
+                const missionMusic = document.getElementById('mission-music');
+                missionMusic.play().catch(error => {
+                    console.error('音楽の再生に失敗しました。', error);
+                });
+            }
 
-        function showPopup(missionName, missionBarId) {
-            currentMission = missionName;
-            currentMissionBarId = missionBarId;
-            document.getElementById('name-popup').style.display = 'block';
-        }
+            // その他の既存のスクリプト
+            var currentMission = ""; // 初期化
+            var currentMissionBarId = ""; // 初期化
 
-        function cancelPopup() {
-            document.getElementById('name-popup').style.display = 'none';
-            document.getElementById('name-input').value = ''; // 入力フィールドをクリア
-        }
+            function showPopup(missionName, missionBarId) {
+                // ボタン音を再生
+                const audio = document.getElementById('button-sound');
+                if (audio) {
+                    audio.play();
+                }
 
-        async function saveName() {
-            const nameInput = document.getElementById('name-input');
-            const name = nameInput.value;
+                currentMission = missionName;
+                currentMissionBarId = missionBarId;
+                document.getElementById('name-popup').style.display = 'block';
+            }
 
-            if (name) {
+            function cancelPopup() {
+                document.getElementById('name-popup').style.display = 'none';
+                document.getElementById('name-input').value = ''; // 入力フィールドをクリア
+            }
+
+            async function saveName() {
+                const nameInput = document.getElementById('name-input');
+                const name = nameInput.value;
+
+                if (name) {
+                    try {
+                        const userGroup = localStorage.getItem('userGroup');
+                        let collectionName = userGroup === 'group1' ? 'Group1' : 'Group2';
+                        const missionRef = doc(collection(db, collectionName), currentMission);
+
+                        await setDoc(missionRef, { name: name });
+                        console.log(`Saved ${name} to ${collectionName}/${currentMission}`);
+
+                        // Save to localStorage for transferring to another HTML page
+                        saveToLocalStorage(currentMission, name);
+
+                        document.getElementById('name-popup').style.display = 'none';
+                        nameInput.value = '';
+
+                        loadName(currentMission, currentMissionBarId);
+
+                        // Check if all missions are completed and redirect
+                        checkAndRedirect();
+                    } catch (error) {
+                        console.error('Error saving name: ', error);
+                    }
+                }
+            }
+
+            async function loadName(missionName, missionBarId) {
                 try {
                     const userGroup = localStorage.getItem('userGroup');
                     let collectionName = userGroup === 'group1' ? 'Group1' : 'Group2';
-                    const missionRef = doc(collection(db, collectionName), currentMission);
+                    const missionRef = doc(collection(db, collectionName), missionName);
+                    const docSnap = await getDoc(missionRef);
 
-                    await setDoc(missionRef, { name: name });
-                    console.log(`Saved ${name} to ${collectionName}/${currentMission}`);
+                    if (docSnap.exists()) {
+                        const name = docSnap.data().name;
+                        const missionBar = document.getElementById(missionBarId);
+                        if (missionBar) {
+                            missionBar.innerText = name;
+                        }
+                        console.log(`Loaded ${name} from ${collectionName}/${missionName}`);
 
-                    // Save to localStorage for transferring to another HTML page
-                    saveToLocalStorage(currentMission, name);
-
-                    document.getElementById('name-popup').style.display = 'none';
-                    nameInput.value = '';
-
-                    loadName(currentMission, currentMissionBarId);
-
-                    // Check if all missions are completed and redirect
-                    checkAndRedirect();
-                } catch (error) {
-                    console.error('Error saving name: ', error);
-                }
-            }
-        }
-
-        async function loadName(missionName, missionBarId) {
-            try {
-                const userGroup = localStorage.getItem('userGroup');
-                let collectionName = userGroup === 'group1' ? 'Group1' : 'Group2';
-                const missionRef = doc(collection(db, collectionName), missionName);
-                const docSnap = await getDoc(missionRef);
-
-                if (docSnap.exists()) {
-                    const name = docSnap.data().name;
-                    const missionBar = document.getElementById(missionBarId);
-                    if (missionBar) {
-                        missionBar.innerText = name;
+                        // Save to localStorage for transfer to another HTML
+                        saveToLocalStorage(missionName, name);
+                    } else {
+                        console.log(`No data found for ${collectionName}/${missionName}`);
                     }
-                    console.log(`Loaded ${name} from ${collectionName}/${missionName}`);
-
-                    // Save to localStorage for transfer to another HTML
-                    saveToLocalStorage(missionName, name);
-                } else {
-                    console.log(`No data found for ${collectionName}/${missionName}`);
+                } catch (error) {
+                    console.error('Error loading name: ', error);
                 }
-            } catch (error) {
-                console.error('Error loading name: ', error);
             }
-        }
 
-        function saveToLocalStorage(missionName, name) {
-            localStorage.setItem(missionName, name);
-        }
-
-        function checkAndRedirect() {
-            const missions = ['ボタンを1回押せ', '色を当てろ', '振れ！'];
-            const allCompleted = missions.every(mission => localStorage.getItem(mission));
-            if (allCompleted) {
-                // Delay the redirect by 2 seconds (2000 milliseconds)
-                setTimeout(() => {
-                    window.location.href = 'clear.html';
-                }, 2000);
+            function saveToLocalStorage(missionName, name) {
+                localStorage.setItem(missionName, name);
             }
-        }
 
-        window.onload = function() {
-            loadName('ボタンを1回押せ', 'mission-bar-1');
-            loadName('色を当てろ', 'mission-bar-2');
-            loadName('振れ！', 'mission-bar-3');
+            async function checkAndRedirect() {
+                const missions = ['ボタンを1回押せ', '色を当てろ', '振れ！'];
+                const userGroup = localStorage.getItem('userGroup');
 
-            // Check if all missions are completed on page load
-            checkAndRedirect();
-        };
+                // Ensure only Group2 data is checked
+                if (userGroup === 'group1') {
+                    try {
+                        let allCompleted = true;
+                        for (const mission of missions) {
+                            const collectionName = 'Group1';
+                            const missionRef = doc(collection(db, collectionName), mission);
+                            const docSnap = await getDoc(missionRef);
 
-        window.showPopup = showPopup;
-        window.saveName = saveName;
-        window.cancelPopup = cancelPopup;
+                            // Check if data exists for the mission in Firebase
+                            if (!docSnap.exists()) {
+                                allCompleted = false;
+                                break;
+                            }
+                        }
+
+                        if (allCompleted) {
+                            // Delay the redirect by 2 seconds (2000 milliseconds)
+                            setTimeout(() => {
+                                window.location.href = 'clear.html';
+                            }, 2000);
+                        }
+                    } catch (error) {
+                        console.error('Error checking mission completion: ', error);
+                    }
+                }
+            }
+
+            window.onload = function() {
+                loadName('ボタンを1回押せ', 'mission-bar-1');
+                loadName('色を当てろ', 'mission-bar-2');
+                loadName('振れ！', 'mission-bar-3');
+
+                // Check if all missions are completed on page load
+                checkAndRedirect();
+            };
+
+            window.showPopup = showPopup;
+            window.saveName = saveName;
+            window.cancelPopup = cancelPopup;
+        });
     </script>
 
     <script type="module">
@@ -159,19 +201,6 @@
                     console.log('ServiceWorker registration successful with scope: ', registration.scope);
                 }).catch(err => {
                     console.log('ServiceWorker registration failed: ', err);
-                });
-            });
-        }
-    </script>
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js').then(registration => {
-                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
-                }, err => {
-                    console.log('ServiceWorker registration failed: ', err);
-                }).catch(err => {
-                    console.log(err);
                 });
             });
         }

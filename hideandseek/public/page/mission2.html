@@ -31,12 +31,34 @@
         <button class="cancel-btn" onclick="cancelPopup()">キャンセル</button>
     </div>
 
-    <!-- <script src="../mission.js"></script> -->
+    <!-- オーディオ要素の追加 -->
+    <audio id="button-sound" src="../audio/DecideButtom.mp3"></audio>
+    <audio id="mission-music" src="../audio/mission.mp3" loop></audio> <!-- ループ再生する音楽 -->
+
     <script>
+        // 音楽再生の許可状態をチェックして再生
+        document.addEventListener('DOMContentLoaded', () => {
+            const missionMusic = document.getElementById('mission-music');
+            const musicPermission = localStorage.getItem('musicPermission');
+
+            if (musicPermission === 'allowed') {
+                missionMusic.play().catch(error => {
+                    console.log('音楽の再生に失敗しました。', error);
+                });
+            }
+        });
+
         var currentMission = ""; // 初期化
         var currentMissionBarId = ""; // 初期化
 
         function showPopup(missionName, missionBarId) {
+            // ボタン音の再生
+            var audio = document.getElementById('button-sound');
+            audio.play().catch((error) => {
+                console.log('Error playing audio:', error);
+            });
+
+            // ポップアップ表示の処理
             currentMission = missionName;
             currentMissionBarId = missionBarId;
             document.getElementById('name-popup').style.display = 'block';
@@ -102,17 +124,40 @@
         }
 
         function saveToLocalStorage(missionName, name) {
-            localStorage.setItem(missionName, name);
+            const userGroup = localStorage.getItem('userGroup');
+            const collectionName = userGroup === 'group2' ? 'Group2' : 'Group1';
+            localStorage.setItem(`${collectionName}_${missionName}`, name);
         }
 
-        function checkAndRedirect() {
+        async function checkAndRedirect() {
             const missions = ['ボタンを1回押せ', '色を当てろ', '振れ！'];
-            const allCompleted = missions.every(mission => localStorage.getItem(mission));
-            if (allCompleted) {
-                // Delay the redirect by 2 seconds (2000 milliseconds)
-                setTimeout(() => {
-                    window.location.href = 'clear.html';
-                }, 2000);
+            const userGroup = localStorage.getItem('userGroup');
+
+            // Ensure only Group2 data is checked
+            if (userGroup === 'group2') {
+                try {
+                    let allCompleted = true;
+                    for (const mission of missions) {
+                        const collectionName = 'Group2';
+                        const missionRef = doc(collection(db, collectionName), mission);
+                        const docSnap = await getDoc(missionRef);
+
+                        // Check if data exists for the mission in Firebase
+                        if (!docSnap.exists()) {
+                            allCompleted = false;
+                            break;
+                        }
+                    }
+
+                    if (allCompleted) {
+                        // Delay the redirect by 2 seconds (2000 milliseconds)
+                        setTimeout(() => {
+                            window.location.href = 'clear.html';
+                        }, 2000);
+                    }
+                } catch (error) {
+                    console.error('Error checking mission completion: ', error);
+                }
             }
         }
 
@@ -167,18 +212,5 @@
             });
         }
     </script>
-    <script>
-        if ('serviceWorker' in navigator) {
-          window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js').then(registration => {
-              console.log('ServiceWorker registration successful with scope: ', registration.scope);
-            }, err => {
-              console.log('ServiceWorker registration failed: ', err);
-            }).catch(err => {
-              console.log(err);
-            });
-          });
-        }
-      </script>
 </body>
 </html>

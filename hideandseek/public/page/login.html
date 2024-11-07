@@ -74,27 +74,41 @@
     <button onclick="selectGroup('group1')">グループ 1</button>
     <button onclick="selectGroup('group2')">グループ 2</button>
 
-    <audio id="button-sound" src="./audio/DecideButtom.mp3"></audio>
+    <audio id="button-sound" src="../audio/DecideButtom.mp3"></audio>
 
-    <script>
-        function playButtonSound() {
-            const buttonSound = document.getElementById('button-sound');
-            buttonSound.currentTime = 0; // 再生位置をリセット
-            buttonSound.play().catch(error => {
-                console.error('音声の再生に失敗しました:', error);
-            });
-        }
+    <audio id="button-sound" src="../audio/DecideButtom.mp3"></audio>
 
-        function selectGroup(group) {
-            playButtonSound();
-            localStorage.setItem('userGroup', group);
-            if (group === 'group1') {
-                window.location.href = 'mission1.html';
-            } else if (group === 'group2') {
-                window.location.href = 'mission2.html';
-            }
+<script>
+    const buttonSound = document.getElementById('button-sound');
+
+    // 音声のロードエラーチェック
+    buttonSound.addEventListener('error', () => {
+        console.error('音声ファイルがロードできませんでした。パスを確認してください。');
+    });
+
+    // 再生イベント
+    buttonSound.addEventListener('play', () => {
+        console.log('音声が再生されました。');
+    });
+
+    function playButtonSound() {
+        buttonSound.currentTime = 0; // 再生位置をリセット
+        buttonSound.play().catch(error => {
+            console.error('音声の再生に失敗しました:', error);
+        });
+    }
+
+    function selectGroup(group) {
+        playButtonSound(); // 音声再生
+        localStorage.setItem('userGroup', group);
+        if (group === 'group1') {
+            window.location.href = 'mission1.html';
+        } else if (group === 'group2') {
+            window.location.href = 'mission2.html';
         }
-    </script>
+    }
+</script>
+
 
     <script type="module" src="firebase.js"></script>
     <script>
