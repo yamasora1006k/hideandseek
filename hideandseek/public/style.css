@@ -137,3 +137,10 @@ body {
     height: 8%; 
     display: block;
   }
+
+  .GroupName {
+    text-align: center;
+    padding-top: 7%;
+    color: #f44336;
+    font-weight: bolder;
+  }

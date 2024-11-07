@@ -13,14 +13,20 @@
         <img src="../image/mission.png" alt="mission" class="fullscreen-image" />
 
         <!-- タップ可能な領域 -->
-        <div class="tap-area" id="tap-area-1" onclick="showPopup('ボタンを1回押せ', 'mission-bar-1')"></div>
-        <div class="tap-area" id="tap-area-2" onclick="showPopup('色を当てろ', 'mission-bar-2')"></div>
-        <div class="tap-area" id="tap-area-3" onclick="showPopup('振れ！', 'mission-bar-3')"></div>
+        <div class="tap-area" id="tap-area-1" onclick="showPopup('ボタンを1回押せ', 'mission-bar-1')">
+            <div class="GroupName" id="mission-bar-1"></div>
+        </div>
+        <div class="tap-area" id="tap-area-2" onclick="showPopup('色を当てろ', 'mission-bar-2')">
+            <div class="GroupName" id="mission-bar-2"></div>
+        </div>
+        <div class="tap-area" id="tap-area-3" onclick="showPopup('振れ！', 'mission-bar-3')">
+            <div class="GroupName" id="mission-bar-3"></div>
+        </div>
     </div>
 
     <!-- 名前入力ポップアップ -->
     <div id="name-popup" class="popup">
-        <label for="name-input">名前を入力してください:</label>
+        <label for="name-input">グループ名を入力してください:</label>
         <input type="text" id="name-input" />
         <button class="save-btn" onclick="saveName()">保存</button>
         <button class="cancel-btn" onclick="cancelPopup()">キャンセル</button>
@@ -80,32 +86,27 @@
         // 名前をFirebaseに保存する関数
         // Firestoreに名前を保存する関数
         async function saveName() {
-    const nameInput = document.getElementById('name-input');
-    const name = nameInput.value;
+        const nameInput = document.getElementById('name-input');
+        const name = nameInput.value;
 
-    if (name) {
-        try {
-            // Use doc and collection from the global scope or ensure they are available
-            const missionRef = doc(collection(db, "missions"), currentMission);
-            await setDoc(missionRef, { name: name });
+        if (name) {
+            try {
+                const missionRef = doc(collection(db, "missions"), currentMission);
+                await setDoc(missionRef, { name: name });
 
-            // Hide the popup and clear the input field
-            document.getElementById('name-popup').style.display = 'none';
-            nameInput.value = '';
+                // Hide the popup and clear the input field
+                document.getElementById('name-popup').style.display = 'none';
+                nameInput.value = '';
 
-            // Display the name in the mission bar
-            const missionBar = document.getElementById(currentMissionBarId);
-            if (missionBar) {
-                missionBar.innerText = name;
+                // Display the saved name by calling loadName
+                loadName(currentMission, currentMissionBarId);
+            } catch (error) {
+                console.error('Error saving name: ', error);
             }
-
-        } catch (error) {
-            console.error('Error saving name: ', error);
+            console.log('Firestore initialized: ', db);
         }
-        console.log('Firestore initialized: ', db);
-
     }
-}
+
 
 
 // Firebaseから名前を取得して表示する関数
