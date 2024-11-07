@@ -22,14 +22,15 @@
     </div>
 
     <div id="name-popup" class="popup">
-        <label for="name-input">グループ名を入力してください:</label>
+        <label for="name-input">名前を入力してください:</label>
         <input type="text" id="name-input" />
         <button class="save-btn" onclick="saveName()">保存</button>
         <button class="cancel-btn" onclick="cancelPopup()">キャンセル</button>
     </div>
 
-    <!-- Add mission audio element -->
+    <!-- オーディオの追加 -->
     <audio id="mission-music" src="../audio/mission.mp3" loop></audio>
+    <audio id="button-sound" src="../audio/DecideButtom.mp3"></audio>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
