@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firestore Data Display</title>
+    <!-- Firebaseの初期化用スクリプトをCDNから読み込む -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+</head>
+<body>
+    <h1>Firestore Data List</h1>
+    <ul id="data-list"></ul>
+
+    <script>
+        // Firebaseの設定
+        const firebaseConfig = {
+            apiKey: "AIzaSyCQHe6oqqp9dWPLTnbuSevPtH-OM61nmmg",
+            authDomain: "hideend-8d9cc.firebaseapp.com",
+            projectId: "hideend-8d9cc",
+            storageBucket: "hideend-8d9cc.firebasestorage.app",
+            messagingSenderId: "73697262710",
+            appId: "1:73697262710:web:ba8aa964343f65e11cf357",
+            measurementId: "G-4YW1T5E2B6"
+        };
+
+        // Firebaseを初期化
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Firestoreからデータを取得してリストに表示
+        const dataList = document.getElementById('data-list');
+
+        db.collection('orders').get().then((querySnapshot) => {
+            dataList.innerHTML = ''; // 既存のリストをクリア
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                const listItem = document.createElement('li');
+                
+                // ドキュメントの名前を取得（例: BRIGHTNESS, BUTTON, VIBRATION）
+                const docName = doc.id;
+                // フィールドを取得
+                const alertValue = data.kind !== undefined ? `kind: ${data.kind}` : 'alert: Not Available';
+                const valueValue = data.true !== undefined ? `value: ${data.true}` : 'value: Not Available';
+
+                listItem.textContent = `${docName} - ${alertValue}, ${valueValue}`;
+                dataList.appendChild(listItem);
+            });
+        }).catch((error) => {
+            console.error("Error getting documents: ", error);
+        });
+    </script>
+</body>
+</html>
