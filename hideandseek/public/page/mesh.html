@@ -4,24 +4,73 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Firestore Data Display</title>
+    <link rel="manifest" href="../manifest.json">
     <!-- Firebaseの初期化用スクリプトをCDNから読み込む -->
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <style>
+        body {
+            font-family: 'Noto Serif JP', serif;
+            background-color: #f5deb3;
+            color: #333;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        h1 {
+            color: #c9302c;
+            font-size: 3em;
+            margin-top: 20px;
+            text-shadow: 2px 2px #8b4513;
+        }
+        #data-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            width: 100%;
+            max-width: 400px;
+        }
+        #data-list li {
+            background: linear-gradient(to bottom, #f1e7d3, #e8c097);
+            padding: 15px;
+            margin: 40px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            font-size: 1.1em;
+            position: relative;
+            border: 1px solid #8b4513;
+            font-style: italic;
+        }
+        #data-list li::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 30px;
+            height: 30px;
+            background: url('https://img.icons8.com/emoji/48/treasure-map.png') no-repeat;
+            background-size: contain;
+        }
+    </style>
 </head>
 <body>
-    <h1>Firestore Data List</h1>
+    
     <ul id="data-list"></ul>
 
     <script>
         // Firebaseの設定
         const firebaseConfig = {
-            apiKey: "AIzaSyCQHe6oqqp9dWPLTnbuSevPtH-OM61nmmg",
-            authDomain: "hideend-8d9cc.firebaseapp.com",
-            projectId: "hideend-8d9cc",
-            storageBucket: "hideend-8d9cc.firebasestorage.app",
-            messagingSenderId: "73697262710",
-            appId: "1:73697262710:web:ba8aa964343f65e11cf357",
-            measurementId: "G-4YW1T5E2B6"
+            apiKey: "AIzaSyADCaqfQ7keN4jAlhEu3PPB3OSFA7hDXts",
+            authDomain: "yamaso-8515a.firebaseapp.com",
+            projectId: "yamaso-8515a",
+            storageBucket: "yamaso-8515a.appspot.com",
+            messagingSenderId: "550480982941",
+            appId: "1:550480982941:web:d210a4658b8b6429c33574",
+            measurementId: "G-EQXBWBES62"
         };
 
         // Firebaseを初期化
@@ -39,16 +88,42 @@
                 
                 // ドキュメントの名前を取得（例: BRIGHTNESS, BUTTON, VIBRATION）
                 const docName = doc.id;
-                // フィールドを取得
-                const alertValue = data.kind !== undefined ? `kind: ${data.kind}` : 'alert: Not Available';
-                const valueValue = data.true !== undefined ? `value: ${data.true}` : 'value: Not Available';
 
-                listItem.textContent = `${docName} - ${alertValue}, ${valueValue}`;
+                // true or falseに合わせて表示
+                const updateDisplay = (value) => {
+                    listItem.textContent = value ? `「${docName}をクリアした！」` : `「${docName}はまだクリアしていない」`;
+                };
+                updateDisplay(data.true);
+
+                // リストアイテムをクリックしたときにtrue/falseを切り替える処理を追加
+                listItem.addEventListener('click', () => {
+                    const newValue = !data.true;
+                    db.collection('orders').doc(docName).update({ true: newValue }).then(() => {
+                        data.true = newValue; // ローカルデータを更新
+                        updateDisplay(newValue);
+                    }).catch((error) => {
+                        console.error("Error updating document: ", error);
+                    });
+                });
+
                 dataList.appendChild(listItem);
             });
         }).catch((error) => {
             console.error("Error getting documents: ", error);
         });
+    </script>     
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('../sw.js').then(registration => {
+                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                }, err => {
+                    console.log('ServiceWorker registration failed:', err);
+                }).catch(err => {
+                    console.log(err);
+                });
+            });
+        }
     </script>
 </body>
 </html>

@@ -124,6 +124,11 @@
         }
 
         function saveToLocalStorage(missionName, name) {
+            localStorage.setItem(missionName, name);
+        }
+
+
+        function saveToLocalStorage(missionName, name) {
             const userGroup = localStorage.getItem('userGroup');
             const collectionName = userGroup === 'group2' ? 'Group2' : 'Group1';
             localStorage.setItem(`${collectionName}_${missionName}`, name);
